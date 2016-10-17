@@ -61,7 +61,20 @@ test2 = {:verbose=>true, :vertical=>false, :min=>40, :middle=>-1}
 test = uri_helper('desktop', 'test')
 
 ########## running the wrapper ##########
-brute_sort_save_with_settings(test, sharp, 'test_sharp')
-brute_sort_save_with_settings(test, soft,'test_soft')
 
-#Pxlsrt::Brute.brute("/Users/christiansamuel/desktop/test.png", :verbose=>true, :vertical=>true, :max=>80, :min=>10, :smooth=>true, :method=>'uniqueness', :middle=>1).save("/Users/christiansamuel/desktop/test.png")
+def barrage(input, output_name = nil)
+  barrage_hash = { sharp: {:verbose=>true, :vertical=>true, :min=>20, :max=>60, :method=>'uniqueness'},
+                   soft: {:verbose=>true, :vertical=>true, :min=>100, :max=>300},
+                   test1: {:verbose=>true, :diagonal=>true, :min=>100, :max=>300},
+                   test2: {:verbose=>true, :vertical=>false, :min=>40, :middle=>-1} }
+  barrage_hash.each do |key, setting_hash|
+    brute_sort_save_with_settings(input, setting_hash, (output_name + "_#{key}"))
+  end
+end
+
+barrage(test, 'test')
+# brute_sort_save_with_settings(test, soft,'test_soft')
+
+#Pxlsrt::Brute.brute("/Users/christiansamuel/desktop/test.png", :verbose=>true, :vertical=>true, :max=>80, 
+#                                                               :min=>10, :smooth=>true, :method=>'uniqueness', 
+#                                                               :middle=>1).save("/Users/christiansamuel/desktop/test.png")
