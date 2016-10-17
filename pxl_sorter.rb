@@ -3,11 +3,11 @@ require 'pry'
 
 def output(base_uri, input_name = nil, output_name = nil, options)
   if output_name.nil?
-    settings = options.to_s.gsub(/[{}>,":]/, '{}>,"' => '', ':' => '_').gsub(/\s+/, '')
-    out_file = File.new(base_uri + input_name + settings + '.txt', "w")
+    rando = '_' + (0...4).map{65.+(rand(26)).chr}.join.downcase
+    out_file = File.new(base_uri + input_name + rando + '.txt', "w")
     out_file.puts(options.to_s)
     out_file.close
-    return base_uri + input_name + settings + '.png'
+    return base_uri + input_name + rando + '.png'
   else
     out_file = File.new(base_uri + output_name + '.txt', "w")
     out_file.puts(options.to_s)
@@ -70,6 +70,7 @@ end
 
 ########### base uris ###########
 test = uri_helper('desktop', 'test')
+testing = uri_helper('downloads', 'testing')
 
 ########## running the wrapper ##########
 
@@ -86,9 +87,9 @@ def barrage(input, output_name)
   end
 end
 
-barrage(test, 'test')
+# barrage(testing, 'testing')
 
-# brute_sort_save_with_settings(test, @soft_reverse,'test_soft_reverse')
+brute_sort_save_with_settings(test, @soft_reverse)
 
 #Pxlsrt::Brute.brute("/Users/christiansamuel/desktop/test.png", :verbose=>true, :vertical=>true, :max=>80, 
 #                                                               :min=>10, :smooth=>true, :method=>'uniqueness', 
