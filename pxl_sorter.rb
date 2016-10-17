@@ -9,7 +9,6 @@ def output(base_uri, input_name = nil, output_name = nil, options)
     out_file.close
     return base_uri + input_name + settings + '.png'
   else
-    settings = options.to_s.gsub(/[{}>,":]/, '{}>,"' => '', ':' => '_').gsub(/\s+/, '')
     out_file = File.new(base_uri + output_name + '.txt', "w")
     out_file.puts(options.to_s)
     out_file.close
@@ -36,7 +35,9 @@ defaults = {reverse: false, vertical: false, diagonal: false,
             smooth: false, method: 'sum-rgb', verbose: false,
             min: Float::INFINITY, max: Float::INFINITY, 
             trusted: false, middle: false}
+
   options = defaults.merge(options)
+
     Pxlsrt::Brute.brute(input, reverse: options[:reverse], vertical: options[:vertical],
                         diagonal: options[:diagonal], smooth: options[:smooth], method: options[:method], 
                         verbose: options[:verbose], min: options[:min], max: options[:max],
@@ -52,28 +53,42 @@ def uri_helper(location, file_name)
 end
 
 ############# settings ############
-sharp = {:verbose=>true, :vertical=>true, :min=>20, :max=>60, :method=>'uniqueness'}
-soft = {:verbose=>true, :vertical=>true, :min=>100, :max=>300}
-test1 = {:verbose=>true, :diagonal=>true, :min=>100, :max=>300}
-test2 = {:verbose=>true, :vertical=>false, :min=>40, :middle=>-1}
+@sharp = {verbose: true, vertical: true, min:20, max: 60, method: 'uniqueness'}
+@soft = {verbose: true, vertical: true, min: 100, max: 300}
+@soft_diagonal = {verbose: true, diagonal: true, min: 100, max: 300}
+@side_glitch = {verbose: true, vertical: false, min: 40, middle: -1}
+@side_glitch_soft = {verbose: true, vertical: false, min: 100, max: 300, :middle=>-1}
+@side_glitch_erratic = {verbose: true, vertical: false, min: 100, max: 300, :middle=>-4}
+@vertical_glitch_soft = {verbose: true, vertical: true, min: 100, max: 300, :middle=>-1}
+@soft_unique = {verbose: true, vertical: true, min: 100, max: 300, method: 'uniqueness'}
+@side_soft_unique = {verbose: true, vertical: false, min: 100, max: 300, method: 'uniqueness'}
+@side_soft_aggressive = {verbose: true, vertical: false, min: 100, max: 300, method: 'sum-hsb', smooth: true}
+@side_soft_harsh = {verbose: true, vertical: false, min: 100, max: 300, method: 'hue', smooth: true}
+@side_soft_sand = {verbose: true, vertical: false, min: 100, max: 300, method: 'random', smooth: true}
+@side_soft_yellow = {verbose: true, vertical: false, min: 100, max: 300, method: 'yellow', smooth: true}
+@soft_reverse = {verbose: true, vertical: true, min: 100, max: 300, reverse: true}
 
 ########### base uris ###########
 test = uri_helper('desktop', 'test')
 
 ########## running the wrapper ##########
 
-def barrage(input, output_name = nil)
-  barrage_hash = { sharp: {:verbose=>true, :vertical=>true, :min=>20, :max=>60, :method=>'uniqueness'},
-                   soft: {:verbose=>true, :vertical=>true, :min=>100, :max=>300},
-                   test1: {:verbose=>true, :diagonal=>true, :min=>100, :max=>300},
-                   test2: {:verbose=>true, :vertical=>false, :min=>40, :middle=>-1} }
+def barrage(input, output_name)
+  barrage_hash = { sharp: @sharp, soft: @soft, soft_diagonal: @soft_diagonal,
+                   side_glitch: @side_glitch, side_glitch_soft: @side_glitch_soft,
+                   side_glitch_erratic: @side_glitch_erratic, vertical_glitch_soft: @vertical_glitch_soft,
+                   soft_unique: @soft_unique, side_soft_unique: @side_soft_unique,
+                   side_soft_aggressive: @side_soft_aggressive, side_soft_harsh: @side_soft_harsh,
+                   side_soft_sand: @side_soft_sand, side_soft_yellow: @side_soft_yellow,
+                   soft_reverse: @soft_reverse }
   barrage_hash.each do |key, setting_hash|
     brute_sort_save_with_settings(input, setting_hash, (output_name + "_#{key}"))
   end
 end
 
 barrage(test, 'test')
-# brute_sort_save_with_settings(test, soft,'test_soft')
+
+# brute_sort_save_with_settings(test, @soft_reverse,'test_soft_reverse')
 
 #Pxlsrt::Brute.brute("/Users/christiansamuel/desktop/test.png", :verbose=>true, :vertical=>true, :max=>80, 
 #                                                               :min=>10, :smooth=>true, :method=>'uniqueness', 
