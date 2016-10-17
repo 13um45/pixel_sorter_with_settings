@@ -1,1 +1,1 @@
-A simple wrapper pxlsrt that outputs a texts file with parameters used.
+A simple wrapper for pxlsrt that outputs a texts file with parameters used.
