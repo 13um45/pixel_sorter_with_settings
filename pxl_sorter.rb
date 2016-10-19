@@ -4,24 +4,31 @@ require 'rmagick'
 
 include Magick
 
-def output(base_uri, input_name = nil, output_name = nil, options)
+def output(base_uri, input_name = nil, output_name = nil, options, gif)
   base_uri = base_uri + 'output/'
   Dir.mkdir(base_uri) unless Dir.exists?(base_uri)
   if output_name.nil?
     rando = '_' + (0...4).map{65.+(rand(26)).chr}.join.downcase
-    out_file = File.new(base_uri + input_name + rando + '.txt', "w")
-    out_file.puts(options.to_s)
-    out_file.close
+    settings_file = File.new(base_uri + input_name + rando + '.txt', "w")
+    settings_file.puts(options.to_s)
+    settings_file.close
     return base_uri +  input_name + rando + '.png'
-  else
-    out_file = File.new(base_uri + output_name + '.txt', "w")
-    out_file.puts(options.to_s)
-    out_file.close
+  elsif gif
+    @base_uri = base_uri + "#{input_name}/"
+    Dir.mkdir(@base_uri) unless Dir.exists?(@base_uri)
+    settings_file = File.new(@base_uri + output_name + '.txt', "w")
+    settings_file.puts(options.to_s)
+    settings_file.close
+    return @base_uri + output_name + '.png'
+  elsif !gif
+    settings_file = File.new(base_uri + output_name + '.txt', "w")
+    settings_file.puts(options.to_s)
+    settings_file.close
    return base_uri + output_name + '.png'
   end
 end
 
-def file_name_with_settings(input_uri, options, output_name)
+def file_name_with_settings(input_uri, options, output_name, gif)
     base_uri = input_uri.dup
     input_name = File.basename(base_uri, '.png')
     length = input_name.length + 4
@@ -31,18 +38,18 @@ def file_name_with_settings(input_uri, options, output_name)
   if output_name.nil?
     return output(base_uri, input_name, nil, options)
   else
-    return output(base_uri, nil,  output_name, options)
+    return output(base_uri, input_name,  output_name, options, gif)
   end
 end
 
-def brute_sort_save_with_settings(input, options = {},output_name = nil)
+def brute_sort_save_with_settings(input, options = {}, output_name = nil, gif = false)
   options = DEFAULTS.merge(options)
 
   Pxlsrt::Brute.brute(input, reverse: options[:reverse], vertical: options[:vertical],
                         diagonal: options[:diagonal], smooth: options[:smooth], method: options[:method], 
                         verbose: options[:verbose], min: options[:min], max: options[:max],
                         trusted: options[:trusted], middle: options[:middle] 
-                      ).save(file_name_with_settings(input, options, output_name))
+                      ).save(file_name_with_settings(input, options, output_name, gif))
 end
 
 def uri_helper(location, file_name)
@@ -89,11 +96,12 @@ def glitch_sequence_high_long(input, setting_hash, output_name)
   while counter < 101
     setting_hash[:min] = counter
     setting_hash[:max] = counter * 3
-    brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
+    brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}", true)
     puts "FILE #{image_number} COMPLETE"
     image_number += 1
     counter += 1
   end
+  gif(output_name)
 end
 
 def glitch_sequence_high_short(input, setting_hash, output_name)
@@ -107,6 +115,7 @@ def glitch_sequence_high_short(input, setting_hash, output_name)
     image_number += 1
     counter += 1
   end
+  gif(output_name)
 end
 
 def glitch_sequence_high_short_late(input, setting_hash, output_name)
@@ -120,6 +129,7 @@ def glitch_sequence_high_short_late(input, setting_hash, output_name)
     image_number += 1
     counter += 1
   end
+  gif(output_name)
 end
 
 def glitch_sequence_high_short_late_ss(input, setting_hash, output_name)
@@ -133,6 +143,7 @@ def glitch_sequence_high_short_late_ss(input, setting_hash, output_name)
     image_number += 1
     counter += 1
   end
+  gif(output_name)
 end
 
 def glitch_sequence_high_short_late_middle(input, setting_hash, output_name)
@@ -146,6 +157,7 @@ def glitch_sequence_high_short_late_middle(input, setting_hash, output_name)
     image_number += 1
     counter += 1
   end
+  gif(output_name)
 end
 
 def glitch_sequence_low_short(input, setting_hash, output_name)
@@ -159,6 +171,7 @@ def glitch_sequence_low_short(input, setting_hash, output_name)
     image_number += 1
     counter += 3
   end
+  gif(output_name)
 end
 
 def glitch_sequence_low_long(input, setting_hash, output_name)
@@ -172,16 +185,17 @@ def glitch_sequence_low_long(input, setting_hash, output_name)
     image_number += 1
     counter += 3
   end
+  gif(output_name)
 end
 
-def gif
-  animation = ImageList.new(*Dir["/Users/christiansamuel/desktop/gif/*.png"].sort_by { |x| x[/\d+/].to_i })
+def gif(output_name)
+  animation = ImageList.new(*Dir["#{@base_uri}*.png"].sort_by { |x| x[/\d+/].to_i })
   animation.ticks_per_second=1000
-  puts '1'
+  puts 'got images'
   animation.delay = 84
-  puts '2'
-  animation.write("/Users/christiansamuel/desktop/gif/animated.gif")
-  puts '3'
+  puts 'creating gif'
+  animation.write("#{@base_uri}#{output_name}.gif")
+  puts 'COMPLETE'
 end
 
 def barrage(input, output_name)
@@ -190,9 +204,7 @@ def barrage(input, output_name)
   end
 end
 
-gif
-
-# glitch_sequence_high_long(test, SETTINGS[:soft], 'test')
+glitch_sequence_high_long(test, SETTINGS[:soft], 'test')
 # 
 # barrage(test, 'test')
 
