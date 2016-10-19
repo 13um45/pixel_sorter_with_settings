@@ -4,7 +4,6 @@ require 'pry'
 def output(base_uri, input_name = nil, output_name = nil, options)
   base_uri = base_uri + 'output/'
   Dir.mkdir(base_uri) unless Dir.exists?(base_uri)
-
   if output_name.nil?
     rando = '_' + (0...4).map{65.+(rand(26)).chr}.join.downcase
     out_file = File.new(base_uri + input_name + rando + '.txt', "w")
@@ -88,6 +87,7 @@ def glitch_sequence_high_long(input, setting_hash, output_name)
     setting_hash[:min] = counter
     setting_hash[:max] = counter * 3
     brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
+    puts "FILE #{image_number} COMPLETE"
     image_number += 1
     counter += 1
   end
@@ -100,6 +100,7 @@ def glitch_sequence_high_short(input, setting_hash, output_name)
     setting_hash[:min] = counter
     setting_hash[:max] = counter * 3
     brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
+    puts "FILE #{image_number} COMPLETE"
     image_number += 1
     counter += 1
   end
@@ -112,6 +113,7 @@ def glitch_sequence_high_short_late(input, setting_hash, output_name)
     setting_hash[:min] = counter
     setting_hash[:max] = counter * 3
     brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
+    puts "FILE #{image_number} COMPLETE"
     image_number += 1
     counter += 1
   end
@@ -124,6 +126,7 @@ def glitch_sequence_high_short_late_ss(input, setting_hash, output_name)
     setting_hash[:min] = counter
     setting_hash[:max] = counter * 3
     brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
+    puts "FILE #{image_number} COMPLETE"
     image_number += 1
     counter += 1
   end
@@ -136,6 +139,7 @@ def glitch_sequence_high_short_late_middle(input, setting_hash, output_name)
     setting_hash[:min] = counter
     setting_hash[:max] = counter * 3
     brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
+    puts "FILE #{image_number} COMPLETE"
     image_number += 1
     counter += 1
   end
@@ -148,6 +152,7 @@ def glitch_sequence_low_short(input, setting_hash, output_name)
     setting_hash[:min] = counter
     setting_hash[:max] = counter * 3
     brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
+    puts "FILE #{image_number} COMPLETE"
     image_number += 1
     counter += 3
   end
@@ -160,6 +165,7 @@ def glitch_sequence_low_long(input, setting_hash, output_name)
     setting_hash[:min] = counter
     setting_hash[:max] = counter * 3
     brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
+    puts "file #{image_number} complete"
     image_number += 1
     counter += 3
   end
@@ -172,7 +178,7 @@ def barrage(input, output_name)
   end
 end
 
-glitch_sequence_high_long(test, SETTINGS[:soft_unique], 'test')
+glitch_sequence_high_short(test, SETTINGS[:soft_unique], 'test')
 
 # barrage(test, 'test')
 
