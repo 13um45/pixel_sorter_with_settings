@@ -1,5 +1,8 @@
 require 'pxlsrt'
 require 'pry'
+require 'rmagick'
+
+include Magick
 
 def output(base_uri, input_name = nil, output_name = nil, options)
   base_uri = base_uri + 'output/'
@@ -171,6 +174,15 @@ def glitch_sequence_low_long(input, setting_hash, output_name)
   end
 end
 
+def gif
+  animation = ImageList.new(*Dir["/Users/christiansamuel/desktop/gif/*.png"].sort_by { |x| x[/\d+/].to_i })
+  animation.ticks_per_second=1000
+  puts '1'
+  animation.delay = 84
+  puts '2'
+  animation.write("/Users/christiansamuel/desktop/gif/animated.gif")
+  puts '3'
+end
 
 def barrage(input, output_name)
   SETTINGS.each do |key, setting_hash|
@@ -178,8 +190,10 @@ def barrage(input, output_name)
   end
 end
 
-glitch_sequence_high_short(test, SETTINGS[:soft_unique], 'test')
+gif
 
+# glitch_sequence_high_long(test, SETTINGS[:soft], 'test')
+# 
 # barrage(test, 'test')
 
 # brute_sort_save_with_settings(test, SETTINGS[:soft])
