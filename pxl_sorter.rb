@@ -66,7 +66,9 @@ SETTINGS = { sharp: {verbose: true, vertical: true, min:20, max: 60, method: 'un
               side_soft_harsh: {verbose: true, vertical: false, min: 100, max: 300, method: 'hue', smooth: true},
               side_soft_sand: {verbose: true, vertical: false, min: 100, max: 300, method: 'random', smooth: true},
               side_soft_yellow: {verbose: true, vertical: false, min: 100, max: 300, method: 'yellow', smooth: true},
-              soft_reverse: {verbose: true, vertical: true, min: 100, max: 300, reverse: true} }
+              soft_reverse: {verbose: true, vertical: true, min: 100, max: 300, reverse: true},
+              soft_min: {verbose: true, diagonal: true, max: 6},
+              cinna: {verbose: true, vertical: true, min: 150, max: 300}  }
 
 DEFAULTS = {reverse: false, vertical: false, diagonal: false, 
             smooth: false, method: 'sum-rgb', verbose: false,
@@ -77,7 +79,92 @@ DEFAULTS = {reverse: false, vertical: false, diagonal: false,
 test = uri_helper('desktop', 'test')
 testing = uri_helper('downloads', 'testing')
 
-########## running the wrapper ##########
+########## usable methods ##########
+
+def glitch_sequence_high_long(input, setting_hash, output_name)
+  counter = 1
+  image_number = 1
+  while counter < 101
+    setting_hash[:min] = counter
+    setting_hash[:max] = counter * 3
+    brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
+    image_number += 1
+    counter += 1
+  end
+end
+
+def glitch_sequence_high_short(input, setting_hash, output_name)
+  counter = 1
+  image_number = 1
+  while counter < 31
+    setting_hash[:min] = counter
+    setting_hash[:max] = counter * 3
+    brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
+    image_number += 1
+    counter += 1
+  end
+end
+
+def glitch_sequence_high_short_late(input, setting_hash, output_name)
+  counter = 70
+  image_number = 1
+  while counter < 101
+    setting_hash[:min] = counter
+    setting_hash[:max] = counter * 3
+    brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
+    image_number += 1
+    counter += 1
+  end
+end
+
+def glitch_sequence_high_short_late_ss(input, setting_hash, output_name)
+  counter = 120
+  image_number = 1
+  while counter < 151
+    setting_hash[:min] = counter
+    setting_hash[:max] = counter * 3
+    brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
+    image_number += 1
+    counter += 1
+  end
+end
+
+def glitch_sequence_high_short_late_middle(input, setting_hash, output_name)
+  counter = 45
+  image_number = 1
+  while counter < 76
+    setting_hash[:min] = counter
+    setting_hash[:max] = counter * 3
+    brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
+    image_number += 1
+    counter += 1
+  end
+end
+
+def glitch_sequence_low_short(input, setting_hash, output_name)
+  counter = 1
+  image_number = 1
+  while counter < 31
+    setting_hash[:min] = counter
+    setting_hash[:max] = counter * 3
+    brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
+    image_number += 1
+    counter += 3
+  end
+end
+
+def glitch_sequence_low_long(input, setting_hash, output_name)
+  counter = 1
+  image_number = 1
+  while counter < 101
+    setting_hash[:min] = counter
+    setting_hash[:max] = counter * 3
+    brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
+    image_number += 1
+    counter += 3
+  end
+end
+
 
 def barrage(input, output_name)
   SETTINGS.each do |key, setting_hash|
@@ -85,9 +172,11 @@ def barrage(input, output_name)
   end
 end
 
+glitch_sequence_high_long(test, SETTINGS[:soft_unique], 'test')
+
 # barrage(test, 'test')
 
-# brute_sort_save_with_settings(test, SETTINGS[:soft_reverse])
+# brute_sort_save_with_settings(test, SETTINGS[:soft])
 
 # Pxlsrt::Brute.brute("/Users/christiansamuel/desktop/test.png", :verbose=>true, :vertical=>true, :max=>80, 
 #                                                               :min=>10, :smooth=>true, :method=>'uniqueness', 
