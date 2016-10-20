@@ -1,10 +1,12 @@
 require 'pxlsrt'
 require 'pry'
 require 'rmagick'
+require 'image_optim'
+require 'image_optim_pack'
 
 include Magick
 
-def output(base_uri, input_name = nil, output_name = nil, options, gif)
+def output(base_uri, input_name, output_name, options, gif, output_folder)
   base_uri = base_uri + 'output/'
   Dir.mkdir(base_uri) unless Dir.exists?(base_uri)
   if output_name.nil?
@@ -13,14 +15,14 @@ def output(base_uri, input_name = nil, output_name = nil, options, gif)
     settings_file.puts(options.to_s)
     settings_file.close
     return base_uri +  input_name + rando + '.png'
-  elsif gif
+  elsif gif || output_folder
     @base_uri = base_uri + "#{input_name}/"
     Dir.mkdir(@base_uri) unless Dir.exists?(@base_uri)
     settings_file = File.new(@base_uri + output_name + '.txt', "w")
     settings_file.puts(options.to_s)
     settings_file.close
     return @base_uri + output_name + '.png'
-  elsif !gif
+  elsif !gif && !output_folder
     settings_file = File.new(base_uri + output_name + '.txt', "w")
     settings_file.puts(options.to_s)
     settings_file.close
@@ -28,7 +30,7 @@ def output(base_uri, input_name = nil, output_name = nil, options, gif)
   end
 end
 
-def file_name_with_settings(input_uri, options, output_name, gif)
+def file_name_with_settings(input_uri, options, output_name, gif, output_folder)
     base_uri = input_uri.dup
     input_name = File.basename(base_uri, '.png')
     length = input_name.length + 4
@@ -36,27 +38,30 @@ def file_name_with_settings(input_uri, options, output_name, gif)
     start = uri_length - length
     base_uri[start..uri_length] = ''
   if output_name.nil?
-    return output(base_uri, input_name, nil, options)
+    return output(base_uri, input_name, nil, options, gif, output_folder)
   else
-    return output(base_uri, input_name,  output_name, options, gif)
+    return output(base_uri, input_name,  output_name, options, gif, output_folder)
   end
 end
 
-def brute_sort_save_with_settings(input, options = {}, output_name = nil, gif = false)
+def brute_sort_save_with_settings(input, options = {}, output_name = nil, gif = false, output_folder = false)
   options = DEFAULTS.merge(options)
 
   Pxlsrt::Brute.brute(input, reverse: options[:reverse], vertical: options[:vertical],
                         diagonal: options[:diagonal], smooth: options[:smooth], method: options[:method], 
                         verbose: options[:verbose], min: options[:min], max: options[:max],
                         trusted: options[:trusted], middle: options[:middle] 
-                      ).save(file_name_with_settings(input, options, output_name, gif))
+                      ).save(file_name_with_settings(input, options, output_name, gif, output_folder))
 end
 
+##
+# creates a uri by adding the name to common paths and appending .png
+# example: test = uri_helper('desktop', 'test')
 def uri_helper(location, file_name)
   if location == 'desktop'
     "/Users/#{ENV['USER']}/desktop/" + file_name + '.png'
   elsif location == 'downloads'
-    "/Users/#{ENV['USER']}/downloads/" + file_name + '.png'
+    "/Users/#{ENV['USER']}/downloads/" + file_name + '.jpg'
   end
 end
 
@@ -84,110 +89,48 @@ DEFAULTS = {reverse: false, vertical: false, diagonal: false,
             min: Float::INFINITY, max: Float::INFINITY, 
             trusted: false, middle: false}
 
-########### base uris ###########
-test = uri_helper('desktop', 'test')
-testing = uri_helper('downloads', 'testing')
 
+SEQUENCE_SETTINGS = { high_long: { counter: 1, max_multiple: 3, increment: 1, break_point: 101 },
+                      high_short: { counter: 1, max_multiple: 3, increment: 1, break_point: 31 },
+                      high_short_late: { counter: 70, max_multiple: 3, increment: 1, break_point: 101 },
+                      cinna: { counter: 120, max_multiple: 2, increment: 1, break_point: 151 },
+                      high_short_late_middle: { counter: 45, max_multiple: 3, increment: 1, break_point: 76 },
+                      high_short_early: { counter: 20, max_multiple: 3, increment: 1, break_point: 51 },
+                      low_short: { counter: 1, max_multiple: 3, increment: 3, break_point: 31 },
+                      low_long: { counter: 1, max_multiple: 3, increment: 3, break_point: 101 } }
+
+########### base uris ###########
+test = uri_helper('desktop', 'tes')
+testing = uri_helper('downloads', 'a')
+cinna = uri_helper('desktop', 'cinna')
 ########## usable methods ##########
 
-def glitch_sequence_high_long(input, setting_hash, output_name)
-  counter = 1
+
+##
+# creates a sequence of pixel sorted images based on the setting hash and a sequence_setting hash chosen
+# the output name must only include the name of the output image not the file extension
+# the uri_helper can be used to create the input uri
+# defaults to the :high_short sequence setting
+# example: glitch_sequence(test, SETTINGS[:side_glitch], 'test')
+# or
+# glitch_sequence(test, SETTINGS[:side_glitch], SEQUENCE_SETTINGS[:high_long],'test')
+def glitch_sequence(input, setting_hash, settings = SEQUENCE_SETTINGS[:high_short], output_name)
+  counter = settings[:counter]
   image_number = 1
-  while counter < 101
+  while counter < settings[:break_point]
     setting_hash[:min] = counter
-    setting_hash[:max] = counter * 3
-    brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}", true)
+    setting_hash[:max] = counter * settings[:max_multiple]
+    brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}", true, true)
     puts "FILE #{image_number} COMPLETE"
     image_number += 1
-    counter += 1
+    counter += settings[:increment]
   end
+  FileUtils.cp(input, @base_uri) unless settings[:counter] > 1
   gif(output_name)
 end
 
-def glitch_sequence_high_short(input, setting_hash, output_name)
-  counter = 1
-  image_number = 1
-  while counter < 31
-    setting_hash[:min] = counter
-    setting_hash[:max] = counter * 3
-    brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
-    puts "FILE #{image_number} COMPLETE"
-    image_number += 1
-    counter += 1
-  end
-  gif(output_name)
-end
-
-def glitch_sequence_high_short_late(input, setting_hash, output_name)
-  counter = 70
-  image_number = 1
-  while counter < 101
-    setting_hash[:min] = counter
-    setting_hash[:max] = counter * 3
-    brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
-    puts "FILE #{image_number} COMPLETE"
-    image_number += 1
-    counter += 1
-  end
-  gif(output_name)
-end
-
-def glitch_sequence_high_short_late_ss(input, setting_hash, output_name)
-  counter = 120
-  image_number = 1
-  while counter < 151
-    setting_hash[:min] = counter
-    setting_hash[:max] = counter * 3
-    brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
-    puts "FILE #{image_number} COMPLETE"
-    image_number += 1
-    counter += 1
-  end
-  gif(output_name)
-end
-
-def glitch_sequence_high_short_late_middle(input, setting_hash, output_name)
-  counter = 45
-  image_number = 1
-  while counter < 76
-    setting_hash[:min] = counter
-    setting_hash[:max] = counter * 3
-    brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
-    puts "FILE #{image_number} COMPLETE"
-    image_number += 1
-    counter += 1
-  end
-  gif(output_name)
-end
-
-def glitch_sequence_low_short(input, setting_hash, output_name)
-  counter = 1
-  image_number = 1
-  while counter < 31
-    setting_hash[:min] = counter
-    setting_hash[:max] = counter * 3
-    brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
-    puts "FILE #{image_number} COMPLETE"
-    image_number += 1
-    counter += 3
-  end
-  gif(output_name)
-end
-
-def glitch_sequence_low_long(input, setting_hash, output_name)
-  counter = 1
-  image_number = 1
-  while counter < 101
-    setting_hash[:min] = counter
-    setting_hash[:max] = counter * 3
-    brute_sort_save_with_settings(input, setting_hash, output_name + "_#{image_number}")
-    puts "file #{image_number} complete"
-    image_number += 1
-    counter += 3
-  end
-  gif(output_name)
-end
-
+##
+# at the moment, must be used with the glitch sequence method
 def gif(output_name)
   animation = ImageList.new(*Dir["#{@base_uri}*.png"].sort_by { |x| x[/\d+/].to_i })
   animation.ticks_per_second=1000
@@ -198,13 +141,46 @@ def gif(output_name)
   puts 'COMPLETE'
 end
 
+def convert(img)
+  image = ImageList.new(img)
+  image.format = 'PNG'
+  image.write("/Users/christiansamuel/desktop/output/a.png") { self.quality = 10 }
+end
+
+
+
+def compress(img)
+  image_optim = ImageOptim.new(allow_lossy: true, verbose: true, skip_missing_workers: true, optipng: false,
+                                pngcrush: false, pngquant: {allow_lossy: true}, advpng: false, pngout: false, svgo: false)
+  FileUtils.cp(image_optim.optimize_image(img), '/Users/christiansamuel/desktop/output/')
+end
+
+##
+# creates an image for each setting in the settings hash
+# quickest way to see how all of the settings effect the image supplied
+# an input uri(string) and an output_name(string) must be provided
+# the output name must only include the name of the output image not the file extension
+# the uri_helper can be used to create the input uri
+# example using the uri_helper:
+# barrage(test, 'test')
+# or
+# barrage("/Users/user/desktop/test.png", 'test')
 def barrage(input, output_name)
   SETTINGS.each do |key, setting_hash|
-    brute_sort_save_with_settings(input, setting_hash, (output_name + "_#{key}"))
+    brute_sort_save_with_settings(input, setting_hash, (output_name + "_#{key}"), false, true)
   end
 end
 
-glitch_sequence_high_long(test, SETTINGS[:soft], 'test')
+
+####################### use #######################
+
+
+
+convert(testing)
+
+# glitch_sequence(cinna, SETTINGS[:cinna], SEQUENCE_SETTINGS[:cinna],'cinna')
+
+
 # 
 # barrage(test, 'test')
 
